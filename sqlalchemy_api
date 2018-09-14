@@ -1,0 +1,98 @@
+from sqlalchemy import Column, String, create_engine,DateTime
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+engine = create_engine('mysql+pymysql://root:123456@localhost:3306/position')
+# 创建对象的基类:
+Base = declarative_base()
+# 初始化数据库连接:
+# 创建DBSession类型:
+DBSession = sessionmaker(bind=engine)
+session = DBSession()
+
+def filter_webposition(webposition):
+    if '实习' in webposition:
+        return True
+    return False
+
+def filter_eduLevel(edu_level):
+    if '招' in edu_level:
+        edu_level = '不限'
+    return edu_level
+
+class R(Base):
+    __tablename__ = 'position'
+    # Id = Column(Integer, primary_key= True, autoincrement= True)
+    company_position = Column(String(100), primary_key=True)  # 公司提供职位的名称
+    web_position = Column(String(100), primary_key=True)  # 网站上搜索显示的职位名称
+    company_name = Column(String(100))  # 公司名称
+    company_type = Column(String(20))  # 公司性质（民营、国企）
+    company_size = Column(String(20))  # 公司规模（100-200人）
+    company_url = Column(String(100))  # 招聘网上公司网址
+    edu_level = Column(String(20))  # 职位需求教育水平
+    work_experience = Column(String(20))  # 工作经验
+    recruit_type = Column(String(20))  # 招聘类型（校招、社招）
+    city = Column(String(20))  # 工作城市
+    salary_month = Column(String(20))  # 月薪
+    salary_year = Column(String(20))  # 年薪
+    welfare = Column(String(255))  # 福利
+    position_url = Column(String(255))  # 招聘网上职位网址
+    create_date = Column(DateTime)  # 职位发布时间
+    update_date = Column(DateTime)  # 职位更新时间
+    latitude = Column(String(100))  # 经度
+    longitude = Column(String(100))  # 纬度
+    source = Column(String(100))  # 数据来源
+
+class W(Base):
+    __tablename__ = 'position_copy'
+    # Id = Column(Integer, primary_key= True, autoincrement= True)
+    company_position = Column(String(100), primary_key=True)  # 公司提供职位的名称
+    web_position = Column(String(100), primary_key=True)  # 网站上搜索显示的职位名称
+    company_name = Column(String(100))  # 公司名称
+    company_type = Column(String(20))  # 公司性质（民营、国企）
+    company_size = Column(String(20))  # 公司规模（100-200人）
+    company_url = Column(String(100))  # 招聘网上公司网址
+    edu_level = Column(String(20))  # 职位需求教育水平
+    work_experience = Column(String(20))  # 工作经验
+    recruit_type = Column(String(20))  # 招聘类型（校招、社招）
+    city = Column(String(20))  # 工作城市
+    salary_month = Column(String(20))  # 月薪
+    salary_year = Column(String(20))  # 年薪
+    welfare = Column(String(255))  # 福利
+    position_url = Column(String(255))  # 招聘网上职位网址
+    create_date = Column(DateTime)  # 职位发布时间
+    update_date = Column(DateTime)  # 职位更新时间
+    latitude = Column(String(100))  # 经度
+    longitude = Column(String(100))  # 纬度
+    source = Column(String(100))  # 数据来源
+
+all_data = session.query(R).all()
+W.metadata.create_all(engine) #创建表结构
+for i in all_data:   # 切片
+    try:
+        if not filter_webposition(i.web_position):
+            data = W(
+            company_position = i.company_position,
+            web_position = i.web_position,
+            company_name =  i.company_name,
+            company_type = i.company_type,
+            company_size = i.company_size,
+            company_url = i.company_url,
+            edu_level = filter_eduLevel(i.edu_level),
+            work_experience = i.work_experience,
+            recruit_type = i.recruit_type,
+            city = i.city,
+            salary_month = i.salary_month,
+            salary_year = i.salary_year,
+            welfare =  i.welfare,
+            position_url = i.position_url,
+            create_date = i.create_date,
+            update_date = i.update_date,
+            latitude = i.latitude,
+            longitude = i.longitude,
+            source = i.source
+            )
+            session.add(data)
+            session.commit()
+    except:
+        session.rollback()
+        print('-----------yi cuzai------------')
